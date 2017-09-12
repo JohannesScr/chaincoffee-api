@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/JohannesScr/chaincoffee-api#readme",
   "dependencies": {
-    "express": "^4.15.4"
+    "body-parser": "^1.18.1",
+    "express": "^4.15.4",
+    "morgan": "^1.8.2"
   }
 }
