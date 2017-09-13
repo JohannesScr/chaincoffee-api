@@ -19,7 +19,8 @@ router.get('/', (req, res) => {
 // route to return all the users
 router.get('/user', (req, res) => {
   res.json({
-    response: 'You sent a /GET to /chaincoffee/user'
+    response: 'You sent a /GET to /chaincoffee/user',
+    output: 'Returns all the users in the system'
   });
 });
 
@@ -28,7 +29,8 @@ router.get('/user', (req, res) => {
 // route to create a new user
 router.post('/user', (req, res) => {
   res.json({
-    response: 'You sent a /POST to /chaincoffee/user',
+    response: 'You sent a /POST to /chaincoffee/user to create a new user in the system',
+    output: 'Returns the new created user in the system',
     body: req.body
   });
 });
@@ -38,6 +40,7 @@ router.post('/user', (req, res) => {
 router.get('/user/:uid', (req, res) => {
   res.json({
     response: 'You sent a /GET to /chaincoffee/user/' + req.params.uid,
+    output: 'Returns a specific user in the system',
     user_id: req.params.uid
   });
 });
@@ -46,7 +49,8 @@ router.get('/user/:uid', (req, res) => {
 // route to get a specific user
 router.put('/user/:uid', (req, res) => {
   res.json({
-    response: 'You sent a /PUT to /chaincoffee/user/' + req.params.uid,
+    response: 'You sent a /PUT to /chaincoffee/user/' + req.params.uid + ' to update that user in the system',
+    output: 'Returns the updated user in the system',
     user_id: req.params.uid,
     body: req.body
   });
@@ -54,10 +58,13 @@ router.put('/user/:uid', (req, res) => {
 
 // /DELETE /chaincoffee/user/:uid
 // route to remove a new user
+// delete_text: 'delete first_name last_name'
 router.delete('/user/:uid', (req, res) => {
   res.json({
-    response: 'You sent a /DELETE to /chaincoffee/user/' + req.params.uid,
-    user_id: req.params.uid
+    response: 'You sent a /DELETE to /chaincoffee/user/' + req.params.uid + ' to delete that user from the system',
+    output: 'Returns status as successful or not',
+    user_id: req.params.uid,
+    body: req.body
   });
 });
 
@@ -110,7 +117,15 @@ router.get('/event/:eid', (req, res) => {
 // /POST /chaincoffee/event/:eid/event-cancel
 // /POST /chaincoffee/event/:eid/event-confirm
 // route to update a specific event's status
-router.post('/event/:eid/event-:status', (req, res) => {
+router.post('/event/:eid/event-:status', (req, res, next) => {
+  if(req.params.status.search(/^(quote|cancel|confirm)$/) === -1) {   // ^ nothing else in from and $ nothing else at the end
+    let err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+  } else {
+    next();
+  }
+  },(req, res) => {
   res.json({
     response: 'You sent a /PUT request to /chaincoffee/event/' + req.params.eid + '/event-' + req.params.status,
     event_id: req.params.eid,
