@@ -68,6 +68,27 @@ router.delete('/user/:uid', (req, res) => {
   });
 });
 
+// /GET /chaincoffee/user/:uid/event
+// route to return all the events associated to that user
+router.get('/user/:uid/event', (req, res) => {
+  res.json({
+    response: 'You sent a /GET request to /chaincoffee/user' + req.params.uid + '/event to get all the events of this user on the system',
+    output: 'Return all the events associated to user' + req.params.uid,
+    user_id: req.params.uid
+  });
+});
+
+// /GET /chaincoffee/user/:uid/event/:eid
+// route to return a specific event associated to that user
+router.get('/user/:uid/event', (req, res) => {
+  res.json({
+    response: 'You sent a /GET request to /chaincoffee/user' + req.params.uid + '/event/' + req.params.eid + ' to get all the events of this user on the system',
+    output: 'Return event '+ req.params.eid +' associated to user' + req.params.uid,
+    user_id: req.params.uid,
+    event_id: req.params.eid
+  });
+});
+
 // /GET /chaincoffee/event
 // route to get all the events
 router.get('/event', (req, res) => {
