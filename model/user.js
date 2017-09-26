@@ -4,6 +4,14 @@
 
 let mongoose = require('mongoose');
 let UserSchema = new mongoose.Schema({
+    created: {
+        type: Date,
+        default: Date.now
+    },
+    updated: {
+        type: Date,
+        default: Date.now
+    },
     first_name: {
         type: String,
         required: true,
@@ -32,7 +40,8 @@ let UserSchema = new mongoose.Schema({
         trim: true
     },
     user_type: {
-        type: String || default 'client'
+        type: String,
+        default: 'client'
     },
     event: {
         type: Array
