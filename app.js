@@ -1,12 +1,30 @@
 'use strict'
-
+// APP
 let express = require('express');   // import express
 let app = express();    // define the express instance
 let jsonParser = require('body-parser').json;   // import body-parser's json parser
+let mongoose = require('mongoose');
+
+// DEV
 let logger = require('morgan');
 
 // import router
 let routes = require('./routes');
+
+
+/*  MONGODB */
+mongoose.Promise = global.Promise;      // handle gloabal promises
+mongoose.connect('mongodb://localhost:27017/chaincoffee', { useMongoClient: true });  // connect to localhost Mongodb
+
+let db = mongoose.connection;     // create connection to Mongo
+
+db.on('error', console.error.bind(console, 'Mongo connection error: '));    // prevision for any errors
+
+db.once('open', function() {
+    console.log('Mongo connection successful');   // prints message to confirm connection. mongoose stores interim requests and stores when the db is ready
+});
+
+/* GENERAL */
 
 // logger will give us status code for our api responses
 app.use(logger('dev'));
@@ -14,15 +32,9 @@ app.use(logger('dev'));
 app.use(jsonParser());
 
 // all routes are is ./routes.js
-app.use('/chaincoffee', routes);
+app.use(routes);
 
-
-// app.use is used by all requests unless it has a /route defined before the callback function
-app.use((req, res, next) => {
-  console.log('first piece of middleware');
-  next();   // if an argument is passed to next, it goes straight to the error handler
-});
-
+/* ERROR HANDLER */
 
 // error handler for routes
 // catch 404 and pass to error handler
@@ -44,6 +56,8 @@ app.use((err, req, res, next) => {
     }
   });
 });
+
+/* PORT AND LISTEN */
 
 // will run on port 3000 unless the app is running on a production environment
 let port = process.env.PORT || 3000;
