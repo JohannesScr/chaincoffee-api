@@ -8,6 +8,7 @@
 */
 
 let User = require('../model/user');
+let session = require('express-session');
 
 /* PRIMARY FUNCTIONS */
 
@@ -58,6 +59,7 @@ exports.post_user = (req, res, next) => {
                             output: 'Returns the new created user in the system',
                             new_user: user
                         });
+                        // todo create session or reroute to login??
                     }
                 });
 

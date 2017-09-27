@@ -3,6 +3,7 @@
 let user_service = require('./route/user');
 let event_service = require('./route/event');
 let authentication_service = require('./route/login');
+let validation_service = require('./extend/user_credentials');
 
 let express = require('express');
 let router = express.Router();
@@ -20,7 +21,7 @@ router.get('/', (req, res) => {
 });
 
 // LOGIN
-router.post('/login', authentication_service.login);
+router.post('/login', validation_service.user_credentials, authentication_service.login);
 
 // LOGOUT
 router.post('/logout', (req, res) => {});
