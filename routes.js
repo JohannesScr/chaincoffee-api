@@ -2,14 +2,13 @@
 
 let user_service = require('./route/user');
 let event_service = require('./route/event');
-let authentication_service = require('./route/login');
+let authentication_service = require('./route/authentication');
 let validation_service = require('./extend/user_credentials');
 
 let express = require('express');
 let router = express.Router();
 
-// /GET /chaincoffee/
-// first parameter is the route, second paramter is the callback function
+// first parameter is the route, second parameter is the callback function
 // Return a message
 router.get('/', (req, res) => {
   // res.json ends the lifecycle of the request and sends a response back to the client

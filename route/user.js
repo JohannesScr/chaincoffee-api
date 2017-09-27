@@ -8,9 +8,10 @@
 */
 
 let User = require('../model/user');
-let session = require('express-session');
+// let session = require('express-session');
+let authentication_service = require('../route/authentication');
 
-/* PRIMARY FUNCTIONS */
+/* =============== PRIMARY FUNCTIONS =============== */
 
 // route to return all the users
 exports.get_user = (req, res) => {
@@ -54,12 +55,13 @@ exports.post_user = (req, res, next) => {
                     if (error) {
                         next(error);
                     } else {
-                        res.json({
-                            response: 'You sent a /POST to /chaincoffee/user to create a new user in the system',
-                            output: 'Returns the new created user in the system',
-                            new_user: user
-                        });
-                        // todo create session or reroute to login??
+                        authentication_service.login()
+                                .then(
+                                    res.json({
+                                        response: 'You sent a /POST to /chaincoffee/user to create a new user in the system',
+                                        output: 'Returns the new created user in the system and is already logged in',
+                                        new_user: user
+                                    }));
                     }
                 });
 
@@ -102,7 +104,7 @@ exports.delete_user = (req, res) => {
     });
 };
 
-/* SECONDARY FUNCTIONS */
+/* =============== SECONDARY FUNCTIONS =============== */
 
 get_user_query = (req) => {
     if (req.query.user_id) {

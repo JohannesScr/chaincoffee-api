@@ -1,21 +1,21 @@
 'use strict'
-/* APP */
+/* =============== APP =============== */
 let express = require('express');   // import express
 let jsonParser = require('body-parser').json;   // import body-parser's json parser
 let mongoose = require('mongoose');
 let session = require('express-session');
 
-/* EXPRESS */
+/* =============== EXPRESS =============== */
 let app = express();    // define the express instance
 
-/* DEV */
+/* =============== DEV =============== */
 let logger = require('morgan');
 
-/* ROUTER */
+/* =============== LOCAL =============== */
 let routes = require('./routes');
+let authentication_service = require('./route/authentication');
 
-
-/*  MONGODB */
+/* =============== MONGODB =============== */
 mongoose.Promise = global.Promise;      // handle gloabal promises
 mongoose.connect('mongodb://localhost:27017/chaincoffee', { useMongoClient: true });  // connect to localhost Mongodb
 
@@ -27,7 +27,17 @@ db.once('open', function() {
     console.log('Mongo connection successful');   // prints message to confirm connection. mongoose stores interim requests and stores when the db is ready
 });
 
-/* GENERAL */
+/* =============== MIDDLEWARE =============== */
+
+// white listed routes
+let white_listed_routes = [
+        '/login'
+];
+
+app.use((req, res, next) => {
+   req.white_listed = white_listed_routes;
+   next();
+});
 
 // logger will give us status code for our api responses
 app.use(logger('dev'));
@@ -42,10 +52,14 @@ app.use(session({
     saveUninitialized: false
 }));
 
+// route user authentication
+// app.use(authentication_service.route_authentication);
+
+/* =============== ROUTES =============== */
 // all routes are is ./routes.js
 app.use(routes);
 
-/* ERROR HANDLER */
+/* =============== ERROR HANDLER =============== */
 
 // error handler for routes
 // catch 404 and pass to error handler
@@ -68,7 +82,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-/* PORT AND LISTEN */
+/* =============== PORT AND LISTEN =============== */
 
 // will run on port 3000 unless the app is running on a production environment
 let port = process.env.PORT || 3000;

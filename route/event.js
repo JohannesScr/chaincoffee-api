@@ -1,6 +1,6 @@
 
 
-/* PRIMARY FUNCTIONS */
+/* =============== PRIMARY FUNCTIONS =============== */
 
 // route to get all the events
 exports.get_event = (req, res) => {
@@ -38,7 +38,7 @@ exports.delete_event = (req, res) => {
     });
 };
 
-/* SECONDARY FUNCTIONS */
+/* =============== SECONDARY FUNCTIONS =============== */
 
 get_event_query = (req) => {
     if (req.query.event_id) {
@@ -50,7 +50,7 @@ get_event_query = (req) => {
     }
 };
 
-/* HELPER FUNCTIONS */
+/* =============== HELPER FUNCTIONS =============== */
 
 
 
