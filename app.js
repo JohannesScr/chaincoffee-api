@@ -1,14 +1,17 @@
 'use strict'
-// APP
+/* APP */
 let express = require('express');   // import express
-let app = express();    // define the express instance
 let jsonParser = require('body-parser').json;   // import body-parser's json parser
 let mongoose = require('mongoose');
+let session = require('express-session');
 
-// DEV
+/* EXPRESS */
+let app = express();    // define the express instance
+
+/* DEV */
 let logger = require('morgan');
 
-// import router
+/* ROUTER */
 let routes = require('./routes');
 
 
@@ -28,8 +31,16 @@ db.once('open', function() {
 
 // logger will give us status code for our api responses
 app.use(logger('dev'));
+
 // parse the request.body object to json an make is accessible from req.body
 app.use(jsonParser());
+
+// use sessions for tracking logins
+app.use(session({
+    secret: 'chain coffee loves good coffee',
+    resave: true,
+    saveUninitialized: false
+}));
 
 // all routes are is ./routes.js
 app.use(routes);

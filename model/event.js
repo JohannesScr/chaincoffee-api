@@ -3,6 +3,7 @@
 * */
 
 let mongoose = require('mongoose');
+
 let EventSchema = new mongoose.Schema({
     created: {
         type: Date,

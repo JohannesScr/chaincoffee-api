@@ -3,6 +3,8 @@
 * */
 
 let mongoose = require('mongoose');
+let bcrypt = require('bcrypt');
+
 let UserSchema = new mongoose.Schema({
     created: {
         type: Date,
@@ -46,6 +48,21 @@ let UserSchema = new mongoose.Schema({
     event: {
         type: Array
     }
+});
+
+// hash password before saving to the database
+UserSchema.pre('save', (next) => {
+    let user = this;    // this refers to the object instance we created
+
+    bcrypt.hash(user.password, 10, (err, hash) => {  // 10 number of times to run the encryption algorithm
+
+        if (err) {
+            next(err);
+        }
+
+        user.password = hash;
+        next();
+    });
 });
 
 let User = mongoose.model('User', UserSchema);

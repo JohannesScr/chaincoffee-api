@@ -2,6 +2,7 @@
 
 let user_service = require('./route/user');
 let event_service = require('./route/event');
+let authentication_service = require('./route/login');
 
 let express = require('express');
 let router = express.Router();
@@ -17,6 +18,12 @@ router.get('/', (req, res) => {
     oauth: 'we need some proper security'
   });
 });
+
+// LOGIN
+router.post('/login', authentication_service.login);
+
+// LOGOUT
+router.post('/logout', (req, res) => {});
 
 // USER
 router.get('/user', user_service.get_user);
