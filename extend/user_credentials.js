@@ -10,7 +10,7 @@ exports.user_credentials = (req, res, next) => {
      * Calls the User.authenticate method passing the {string} req.body.email, {string} req.body.password and callback function
      *      to authenticate the credentials and returns {object} user.
      * Then adds the {object} user to {object} req.user
-     * Calls the next function to proceed to login*/
+     * Calls the next function to proceed to login */
 
     if (!req.body.email || !req.body.password) {
         let err = new Error('Email and password are required.');
