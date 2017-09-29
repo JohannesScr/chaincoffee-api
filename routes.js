@@ -19,6 +19,9 @@ router.get('/', (req, res) => {
   });
 });
 
+// REGISTER
+router.post('/register', user_service.register_user, authentication_service.login);
+
 // LOGIN
 router.post('/login', validation_service.user_credentials, authentication_service.login);
 

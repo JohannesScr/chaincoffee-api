@@ -27,6 +27,20 @@ db.once('open', function() {
     console.log('Mongo connection successful');   // prints message to confirm connection. mongoose stores interim requests and stores when the db is ready
 });
 
+/* =============== CORS =============== */
+
+app.use(function(req, res, next) {
+    // set the headers to tell the browser what it can and cannot do
+    res.header('Access-Control-Allow-Origin', '*');     // '*' any domain can access
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');     // which headers are permitted in the request
+    // Grab http pre-flight options
+    if (req.method === 'OPTIONS') {
+        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+        res.status(200).json({});                                                 // send an empty json back
+    }
+    next();
+});
+
 /* =============== MIDDLEWARE =============== */
 
 // white listed routes
@@ -52,7 +66,7 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// route user authentication
+// todo route user authentication
 // app.use(authentication_service.route_authentication);
 
 /* =============== ROUTES =============== */
@@ -85,7 +99,7 @@ app.use((err, req, res, next) => {
 /* =============== PORT AND LISTEN =============== */
 
 // will run on port 3000 unless the app is running on a production environment
-let port = process.env.PORT || 3000;
+let port = process.env.PORT || 3089;
 
 // set the port for the app to listen on
 app.listen(port, () => {

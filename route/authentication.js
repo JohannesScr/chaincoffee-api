@@ -24,7 +24,7 @@ exports.route_authentication = (req, res, next) => {
 };
 
 exports.login = (req, res) => {
-
+    /** @param {object} req*/
     let user = {
         first_name: req.user.first_name,
         last_name: req.user.last_name,

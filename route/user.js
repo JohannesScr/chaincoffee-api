@@ -8,25 +8,112 @@
 */
 
 let User = require('../model/user');
-// let session = require('express-session');
+let q = require('q');
 let authentication_service = require('../route/authentication');
 
 /* =============== PRIMARY FUNCTIONS =============== */
+// route to register a user on the system
+exports.register_user = (req, res, next) => {
+    /** @param {object} req
+     * @param {object} res
+     * @param next
+     *
+     * @description
+     * Validates that all the correct data was sent in the {object} req.body
+     * Create a {object} new_user with only the relevant information
+     *      {string}req.body.first_name, {string} req.body.last_name, {string} req.body.email, {number} req.body.contact_number,
+     *      {string} req.body.password, {string} req.body.user_type, {array} req.body.event
+     * Calls the User.create method passing the {object} new_user and a callback function and returns the callback function with {object} user.
+     * Then calls the callback function passing the {object} user
+     * Then adds the {object} user to the {object} req.user
+     * Calls the next function to proceed to login */
+
+    // validate request body
+    if (req.body.first_name &&
+            req.body.last_name &&
+            req.body.email && req.body.confirm_email &&
+            req.body.password && req.body.confirm_password &&
+            req.body.contact_number) {
+
+        if (req.body.email === req.body.confirm_email) {
+            if (req.body.password === req.body.confirm_password) {
+
+                // create new user from the request body
+                let new_user = {
+                    first_name: req.body.first_name,
+                    last_name: req.body.last_name,
+                    email: req.body.email,
+                    contact_number: req.body.contact_number,
+                    password: req.body.password,
+                    user_type: req.body.user_type,
+                    event: req.body.event
+                };
+
+                // hash their password
+                // use the schema's 'create' method to insert our document into Mongo
+                User.create(new_user, (error, user) => {
+                    if (error) {
+                        next(error);
+                    } else {
+                        // add user to request object
+                        req.user = user;
+                        // call next function
+                        next();
+                        // call middleware authentication_service.login
+                    }
+                });
+
+            } else {
+                let err = new Error('Passwords do not match');
+                err.status = 400;
+                next(err);
+            }
+        } else {
+            let err = new Error('Emails do not match');
+            err.status = 400;
+            next(err);
+        }
+
+    } else {
+        let err = new Error ('All fields are required.');
+        err. status = 400;
+        next(err);
+    }
+};
 
 // route to return all the users
-exports.get_user = (req, res) => {
+exports.get_user = (req, res, next) => {
+    /** */
     // check want the user wants to get
-    get_user_query(req);
-
-    // send response
-    res.json({
-        response: 'You sent a /GET to /chaincoffee/user',
-        output: 'Returns all the users in the system'
-    });
+    get_user_query(req)
+            .then((user) => {
+                // send response
+                res.json({
+                    response: 'You sent a /GET to /chaincoffee/user',
+                    output: 'Returns all the users in the system',
+                    user: user
+                });
+            })
+            .catch((err) => {
+                next(err);
+            });
 };
 
 // route to create a new user
 exports.post_user = (req, res, next) => {
+    /** @param {object} req
+     * @param {object} res
+     * @param next
+     *
+     * @description
+     * Validates that all the correct data was sent in the {object} req.body
+     * Create a {object} new_user with only the relevant information
+     *      {string}req.body.first_name, {string} req.body.last_name, {string} req.body.email, {number} req.body.contact_number,
+     *      {string} req.body.password, {string} req.body.user_type, {array} req.body.event
+     * Calls the User.create method passing the {object} new_user and a callback function and returns the callback function with {object} user.
+     * Then calls the callback function passing the {object} user
+     * Then adds the {object} user to the {object} res.user
+     * @return {object} res */
 
     // validate request body
     if (req.body.first_name &&
@@ -55,13 +142,11 @@ exports.post_user = (req, res, next) => {
                     if (error) {
                         next(error);
                     } else {
-                        authentication_service.login()
-                                .then(
-                                    res.json({
-                                        response: 'You sent a /POST to /chaincoffee/user to create a new user in the system',
-                                        output: 'Returns the new created user in the system and is already logged in',
-                                        new_user: user
-                                    }));
+                        res.json({
+                            response: 'You sent a /POST to /chaincoffee/user to create a new user in the system',
+                            output: 'Returns the new created user in the system and is already logged in',
+                            user: user
+                        });
                     }
                 });
 
@@ -107,13 +192,28 @@ exports.delete_user = (req, res) => {
 /* =============== SECONDARY FUNCTIONS =============== */
 
 get_user_query = (req) => {
+    let d = q.defer();
+
     if (req.query.user_id) {
         // get a specific user
         console.log('GET USER: ', req.query.user_id);
+        let user_id = req.query.user_id;
+
+        User.findById(user_id, (err, user) => {   // then execute the callback function
+            if (err) d.reject(err);
+            d.resolve(user);
+        });
     } else {
         // get all users
         console.log('GET ALL USERS: ');
+        User.find({})                      // find({}) to get all the results
+                .exec((err, user) => {   // then execute the callback function
+                    if (err) d.reject(err);
+                    d.resolve(user);
+                });
     }
+
+    return d.promise;
 };
 
 
