@@ -13,7 +13,7 @@ let logger = require('morgan');
 
 /* =============== LOCAL =============== */
 let routes = require('./routes');
-let authentication_service = require('./route/authentication');
+let authentication_service = require('./route/auth');
 
 /* =============== MONGODB =============== */
 mongoose.Promise = global.Promise;      // handle gloabal promises
@@ -66,8 +66,8 @@ app.use(session({
     saveUninitialized: false
 }));
 
-// todo route user authentication
-// app.use(authentication_service.route_authentication);
+// todo route user authorization with sessions
+// app.use(authentication_service.route_authorization);
 
 /* =============== ROUTES =============== */
 // all routes are is ./routes.js

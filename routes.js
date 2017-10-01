@@ -2,7 +2,7 @@
 
 let user_service = require('./route/user');
 let event_service = require('./route/event');
-let authentication_service = require('./route/authentication');
+let authentication_service = require('./route/auth');
 let validation_service = require('./extend/user_credentials');
 
 let express = require('express');

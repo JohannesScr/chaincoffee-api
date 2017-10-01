@@ -25,6 +25,7 @@ exports.user_credentials = (req, res, next) => {
             }
 
             // add user to request object
+            console.log('USER CREDENTIALS VERIFIED SUCCESSFULLY');
             req.user = user;
             // continue to login
             next();

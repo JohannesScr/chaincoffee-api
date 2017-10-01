@@ -9,7 +9,6 @@
 
 let User = require('../model/user');
 let q = require('q');
-let authentication_service = require('../route/authentication');
 
 /* =============== PRIMARY FUNCTIONS =============== */
 // route to register a user on the system
@@ -58,6 +57,7 @@ exports.register_user = (req, res, next) => {
                         // add user to request object
                         req.user = user;
                         // call next function
+                        console.log('USER CREATED SUCCESSFULLY');
                         next();
                         // call middleware authentication_service.login
                     }
@@ -83,15 +83,24 @@ exports.register_user = (req, res, next) => {
 
 // route to return all the users
 exports.get_user = (req, res, next) => {
-    /** */
+    /** @param {object} req
+     * @param {object} res
+     * @param next
+     *
+     * @description
+     * Call get_user_query function passing the {object} req to return the {array} user
+     * Then callback function passing the {array} user
+     * Then add {array} user to {object} res.user
+     * @return {object} res */
+
     // check want the user wants to get
     get_user_query(req)
             .then((user) => {
                 // send response
                 res.json({
-                    response: 'You sent a /GET to /chaincoffee/user',
-                    output: 'Returns all the users in the system',
-                    user: user
+                    response: 'You sent a /GET to /user',
+                    message: 'Get data successfully',
+                    data: user
                 });
             })
             .catch((err) => {
@@ -138,14 +147,14 @@ exports.post_user = (req, res, next) => {
 
                 // hash their password
                 // use the schema's 'create' method to insert our document into Mongo
-                User.create(new_user, (error, user) => {
-                    if (error) {
-                        next(error);
+                User.create(new_user, (err, user) => {
+                    if (err) {
+                        next(err);
                     } else {
+                        console.log('USER CREATED SUCCESSFULLY');
                         res.json({
-                            response: 'You sent a /POST to /chaincoffee/user to create a new user in the system',
-                            output: 'Returns the new created user in the system and is already logged in',
-                            user: user
+                            response: 'You sent a /POST to /user to create a new user in the system',
+                            data: user
                         });
                     }
                 });
@@ -169,29 +178,145 @@ exports.post_user = (req, res, next) => {
 };
 
 // route to get a specific user
-exports.put_user = (req, res) => {
-    res.json({
-        response: 'You sent a /PUT to /chaincoffee/user/' + req.params.uid + ' to update that user in the system',
-        output: 'Returns the updated user in the system',
-        user_id: req.params.id,
-        body: req.body
-    });
+exports.put_user = (req, res, next) => {
+    /** */
+    if (req.params.id && req.body !== {}) {
+        // if (req.session.user_type === 'super admin'|| req.session.user_id === req.params.id) {
+
+            let user_update_data = req.body;
+
+            // User.findByIdAndUpdate(req.params.id, {$set: {user_update_data}}, {new: true}, (err, user) => {
+            //     if (err) next(err);
+            //     console.log('USER UPDATED SUCCESSFULLY');
+            //     res.json({
+            //         response: 'You sent a /PUT to /user' + req.params.id + ' to update that user in the system',
+            //         message: 'User successfully updated',
+            //         data: user,
+            //     });
+            // });
+
+            User.findById(req.params.id, (err, user) => {
+                if (err) next(err);
+
+                for (let key in user) {
+                    if (key === 'first_name' || key === 'last_name' || key === 'contact_number' || key === 'user_type') {
+                        user[key] = user_update_data[key]
+                    }
+                }
+
+                user.save((err, user) => {
+                    if (err) next(err);
+
+                    res.json({
+                        response: 'You sent a /PUT to /user' + req.params.id + ' to update that user in the system',
+                        message: 'User successfully updated',
+                        data: user,
+                    });
+                });
+            })
+
+        // } else {
+        //     let err = new Error('Unauthorized session tokens');
+        //     err.status = 401;
+        //     next(err);
+        // }
+    } else {
+        let err = new Error('user_id and update information required');
+        err.status = 400;
+        next(err);
+    }
 };
 
 // route to remove a new user
 // delete_text: 'delete first_name last_name'
-exports.delete_user = (req, res) => {
-    res.json({
-        response: 'You sent a /DELETE to /chaincoffee/user/' + req.params.uid + ' to delete that user from the system',
-        output: 'Returns status as successful or not',
-        user_id: req.params.id,
-        body: req.body
+exports.delete_user = (req, res, next) => {
+    /** @param {object} req
+     * req.params.id: {string}
+     * req.body: {
+     *      delete_user_id: {string}
+     *      delete_text: {string}
+     *      }
+     * req.session: {
+     *      user_type: {string},
+     *      user_id: {string}
+     *      }
+     * @param {object} res
+     * @param next
+     *
+     * @description
+     * Check that {string} req.params.id and req.body.delete_text is present
+     * Call {model} User.findById passing {string} req.params.id to call callback function passing {object} user from the database
+     * Check that the {string} req.body.delete_text matches the {object} user's first and last name
+     * Check for session tokens
+     * Call {model} User.findByIdAndRemove method passing req.params.id and callback function to return {object} deleted_user
+     * Add {object} deleted_user first and last name to {object} res
+     * @return res */
+
+    // if (req.params.id && req.body.delete_text) {
+    //     // fetch user
+    //     let user_to_be_deleted;
+    //     User.findById(req.params.id, (error, user) => {
+    //         if (error) next(error);
+    //         user_to_be_deleted = user;
+    //
+    //         // if user name and surname match
+    //         if (req.body.delete_text.toLowerCase() === `delete ${user_to_be_deleted.first_name} ${user_to_be_deleted.last_name}`.toLowerCase()) {
+    //             // if super admin or session.user_id equals the deleted user's id
+    //             // only super admin or the user themselves can remove the user from the system
+    //             if (req.session.user_type || req.session.user_id === user_to_be_deleted._id) {
+    //                 User.findByIdAndRemove(user_to_be_deleted._id, (err, deleted_user) => {
+    //                     if (err) next(err);
+    //                     console.log('USER DELETED SUCCESSFULLY');
+    //                     res.json({
+    //                         response: 'You sent a /DELETE to /user to delete a user from the system',
+    //                         message: 'User successfully deleted from the database',
+    //                         first_name: deleted_user.first_name,
+    //                         last_name: deleted_user.last_name
+    //                     });
+    //                 });
+    //             } else {
+    //                 let err = new Error('Unauthorized session tokens');
+    //                 err.status = 400;
+    //                 next(err);
+    //             }
+    //             // else err
+    //         } else {
+    //             let err = new Error('Delete text not matching');
+    //             err.status = 400;
+    //             next(err);
+    //         }
+    //
+    //     });
+    // } else {
+    //     let err = new Error('Please enter a user_id to be removed');
+    //     err.status = 400;
+    //     next(err);
+    // }
+
+    // todo get sessions sorted to implement ^^
+    delete_user(req, next, (deleted_user) => {
+        console.log('USER DELETED SUCCESSFULLY');
+        res.json({
+            response: 'You sent a /DELETE to /user to delete a user from the system',
+            message: 'User successfully deleted from the database',
+            first_name: deleted_user.first_name,
+            last_name: deleted_user.last_name
+        });
     });
 };
 
 /* =============== SECONDARY FUNCTIONS =============== */
 
 get_user_query = (req) => {
+    /** @param {object} req
+     *
+     * @description
+     * Create deferred promise {object} d by calling {object} q.defer method, because the request to the database is asynchronous
+     * Set {number} user_id to {number} req.body.user_id
+     * Call {model} User.findById method passing {number} user_id to return {object} user
+     * Call {object} d.resolve method passing the {object} user
+     * @return d.promise */
+
     let d = q.defer();
 
     if (req.query.user_id) {
@@ -216,4 +341,35 @@ get_user_query = (req) => {
     return d.promise;
 };
 
+/* TEMP FUNCTIONS */
+delete_user = (req, next, callback) => {
+    /** @param {object} req
+     * @param next
+     * @param {function} callback
+     *
+     * @description
+     * Call {model} User.findByIdAndRemove method passing the {string} req.body.delete_user_id and a callback function
+     * Then pass the callback function the {object} err and returned {object} user and call the callback function
+     *      passing the {object} user */
+    if (req.params.id && req.body.delete_text) {
+        User.findById(req.params.id, (err, user) => {
+            if (err) next(err);
+            let user_to_be_deleted = user;
+            if (req.body.delete_text.toLowerCase() === `delete ${user_to_be_deleted.first_name} ${user_to_be_deleted.last_name}`.toLowerCase()) {
+                User.findByIdAndRemove(req.params.id, (err, deleted_user) => {
+                    if (err) next(err);
+                    callback(deleted_user);
+                });
+            } else {
+                let err = new Error('Delete text not matching');
+                err.status = 400;
+                next(err);
+            }
+        });
+    } else {
+        let err = new Error('Please enter a parameter id to be removed and delete text');
+        err.status = 400;
+        next(err);
+    }
+};
 

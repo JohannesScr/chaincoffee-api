@@ -1,7 +1,7 @@
 
 /* =============== PRIMARY FUNCTIONS =============== */
 
-exports.route_authentication = (req, res, next) => {
+exports.route_authorization = (req, res, next) => {
     /** @param {object} req
      * @param {object} res
      * @param next
@@ -62,9 +62,10 @@ exports.login = (req, res) => {
     // just by adding a property to req.session express will create or update a session
     // cookie and session created automatically
     req.session.user_id = req.user.id;
+    console.log('USER LOGGED IN SUCCESSFULLY');
     res.json({
-        message: 'User logged in',
-        user: user,
+        message: 'User logged in successfully',
+        data: user,
         session: req.session.user_id
     });
 };
