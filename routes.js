@@ -34,56 +34,10 @@ router.post('/user', user_service.post_user);
 router.put('/user/:id', user_service.put_user);
 router.delete('/user/:id', user_service.delete_user);
 
-// todo refactor
-// /GET /chaincoffee/user/:uid/event
-// route to return all the events associated to that user
-// router.get('/user/:uid/event', (req, res) => {
-//   res.json({
-//     response: 'You sent a /GET request to /chaincoffee/user' + req.params.uid + '/event to get all the events of this user on the system',
-//     output: 'Return all the events associated to user' + req.params.uid,
-//     user_id: req.params.uid
-//   });
-// });
-
-// todo refactor
-// /GET /chaincoffee/user/:uid/event/:eid
-// route to return a specific event associated to that user
-// router.get('/user/:uid/event', (req, res) => {
-//   res.json({
-//     response: 'You sent a /GET request to /chaincoffee/user' + req.params.uid + '/event/' + req.params.eid + ' to get all the events of this user on the system',
-//     output: 'Return event '+ req.params.eid +' associated to user' + req.params.uid,
-//     user_id: req.params.uid,
-//     event_id: req.params.eid
-//   });
-// });
-
 // EVENT
 router.get('/event', event_service.get_event);
-router.post('/event', event_service.post_event);
+router.post('/event', event_service.post_event, user_service.put_user);
 router.put('/event/:id', event_service.put_event);
-router.delete('/event/:id', event_service.delete_event);
-
-// todo refactor
-// /POST /chaincoffee/event/:eid/event-quote
-// /POST /chaincoffee/event/:eid/event-cancel
-// /POST /chaincoffee/event/:eid/event-confirm
-// route to update a specific event's status
-// router.post('/event/:eid/event-:status', (req, res, next) => {
-//   if(req.params.status.search(/^(quote|cancel|confirm)$/) === -1) {   // ^ nothing else in from and $ nothing else at the end
-//     let err = new Error('Not Found');
-//     err.status = 404;
-//     next(err);
-//   } else {
-//     next();
-//   }
-//   },(req, res) => {
-//   res.json({
-//     response: 'You sent a /PUT request to /chaincoffee/event/' + req.params.eid + '/event-' + req.params.status,
-//     event_id: req.params.eid,
-//     event_status: req.params.status,
-//     body: req.body
-//   });
-// });
-
+router.delete('/event/:id', event_service.delete_event, user_service.put_user);
 
 module.exports = router;

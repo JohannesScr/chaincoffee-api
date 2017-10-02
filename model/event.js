@@ -20,6 +20,14 @@ let EventSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    town: {
+        type: String,
+        trim: true
+    },
+    distance_from_stellenbosch: {
+        type: Number,
+        trim: true
+    },
     number_of_guests: {
         type: Number,
         trim: true

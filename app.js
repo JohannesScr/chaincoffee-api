@@ -15,6 +15,7 @@ let logger = require('morgan');
 let routes = require('./routes');
 let authentication_service = require('./route/auth');
 
+
 /* =============== MONGODB =============== */
 mongoose.Promise = global.Promise;      // handle gloabal promises
 mongoose.connect('mongodb://localhost:27017/chaincoffee', { useMongoClient: true });  // connect to localhost Mongodb
@@ -26,6 +27,7 @@ db.on('error', console.error.bind(console, 'Mongo connection error: '));    // p
 db.once('open', function() {
     console.log('Mongo connection successful');   // prints message to confirm connection. mongoose stores interim requests and stores when the db is ready
 });
+
 
 /* =============== CORS =============== */
 
@@ -40,6 +42,7 @@ app.use(function(req, res, next) {
     }
     next();
 });
+
 
 /* =============== MIDDLEWARE =============== */
 
@@ -69,9 +72,11 @@ app.use(session({
 // todo route user authorization with sessions
 // app.use(authentication_service.route_authorization);
 
+
 /* =============== ROUTES =============== */
 // all routes are is ./routes.js
 app.use(routes);
+
 
 /* =============== ERROR HANDLER =============== */
 
@@ -95,6 +100,7 @@ app.use((err, req, res, next) => {
     }
   });
 });
+
 
 /* =============== PORT AND LISTEN =============== */
 

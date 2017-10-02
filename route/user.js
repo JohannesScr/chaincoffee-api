@@ -94,7 +94,7 @@ exports.get_user = (req, res, next) => {
      * @return {object} res */
 
     // check want the user wants to get
-    get_user_query(req)
+    get_user_query(req.query)
             .then((user) => {
                 // send response
                 res.json({
@@ -148,15 +148,13 @@ exports.post_user = (req, res, next) => {
                 // hash their password
                 // use the schema's 'create' method to insert our document into Mongo
                 User.create(new_user, (err, user) => {
-                    if (err) {
-                        next(err);
-                    } else {
-                        console.log('USER CREATED SUCCESSFULLY');
-                        res.json({
-                            response: 'You sent a /POST to /user to create a new user in the system',
-                            data: user
-                        });
-                    }
+                    if (err) next(err);
+
+                    console.log('USER CREATED SUCCESSFULLY');
+                    res.json({
+                        response: 'You sent a /POST to /user to create a new user in the system',
+                        data: user
+                    });
                 });
 
             } else {
@@ -179,30 +177,47 @@ exports.post_user = (req, res, next) => {
 
 // route to get a specific user
 exports.put_user = (req, res, next) => {
-    /** */
+    /** @param {object} req
+     * @param {object} res
+     * @param next
+     *
+     * @description
+     * Check that the request has the correct data
+     * Check that the user has the correct authorization rights
+     * Call the {model} User.findById method to find the user with the {string} req.params.id
+     * Check and update the general user data
+     * Check for {object} req.event to update the users associated events array
+     * Check and update password ...
+     * Check and update email ...
+     * @return {object} res*/
     if (req.params.id && req.body !== {}) {
         // if (req.session.user_type === 'super admin'|| req.session.user_id === req.params.id) {
 
             let user_update_data = req.body;
 
-            // User.findByIdAndUpdate(req.params.id, {$set: {user_update_data}}, {new: true}, (err, user) => {
-            //     if (err) next(err);
-            //     console.log('USER UPDATED SUCCESSFULLY');
-            //     res.json({
-            //         response: 'You sent a /PUT to /user' + req.params.id + ' to update that user in the system',
-            //         message: 'User successfully updated',
-            //         data: user,
-            //     });
-            // });
-
             User.findById(req.params.id, (err, user) => {
                 if (err) next(err);
 
+                // general user information
                 for (let key in user) {
                     if (key === 'first_name' || key === 'last_name' || key === 'contact_number' || key === 'user_type') {
-                        user[key] = user_update_data[key]
+                        if (user_update_data[key]) {
+                            user[key] = user_update_data[key];
+                        }
                     }
                 }
+
+                // events
+                if (req.event) {
+                    // update the user
+                    user = update_event(req.event, user);
+                }
+
+                // password
+                // todo ^^
+
+                // email
+                // todo ^^
 
                 user.save((err, user) => {
                     if (err) next(err);
@@ -307,8 +322,8 @@ exports.delete_user = (req, res, next) => {
 
 /* =============== SECONDARY FUNCTIONS =============== */
 
-get_user_query = (req) => {
-    /** @param {object} req
+get_user_query = (query) => {
+    /** @param {object} query
      *
      * @description
      * Create deferred promise {object} d by calling {object} q.defer method, because the request to the database is asynchronous
@@ -319,10 +334,10 @@ get_user_query = (req) => {
 
     let d = q.defer();
 
-    if (req.query.user_id) {
+    if (query.user_id) {
         // get a specific user
-        console.log('GET USER: ', req.query.user_id);
-        let user_id = req.query.user_id;
+        console.log('GET USER: ', query.user_id);
+        let user_id = query.user_id;
 
         User.findById(user_id, (err, user) => {   // then execute the callback function
             if (err) d.reject(err);
@@ -341,7 +356,42 @@ get_user_query = (req) => {
     return d.promise;
 };
 
-/* TEMP FUNCTIONS */
+update_event = (event, user, next) => {
+    /** @param {object} event
+     * @param {object} user
+     * @param next
+     *
+     * @description
+     * Create a {object} d deferred promise, as this process is asynchronous
+     * Check for the {object} req.event
+     * Check for the {string} req.event.status 'append' or 'remove'
+     * If 'append' add {string} event._id to the {array} user.event
+     * If '' remove  {string} event._id from the {array} user.evet
+     * @return {object} user */
+
+    // APPEND
+    if (event.status === 'append') {
+        user.event.push(event._id);
+    }
+
+    // REMOVE
+    if (event.status === 'remove') {
+        if (user.event.indexOf(event._id) !== -1) {
+            // check that the event id is present in the user's event array
+            // remove that event id
+            user.event.splice(user.event.indexOf(event._id), 1);
+
+        } else {
+            let err = new Error('Event id not found on user');
+            err.status = 404;
+            next(err);
+        }
+    }
+
+    return user;
+};
+
+/*  =============== TEMP FUNCTIONS ===============  */
 delete_user = (req, next, callback) => {
     /** @param {object} req
      * @param next
