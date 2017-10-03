@@ -75,7 +75,7 @@ exports.route_request_authentication = (req, res, next) => {
      * @param next
      *
      * @description
-     * 
+     *
      *      Calls next to proceed to the route */
 };
 

@@ -14,6 +14,7 @@ exports.login = (req, res) => {
      * @return {object} res */
 
     let user = {
+        user_id: req.user.user_id,
         first_name: req.user.first_name,
         last_name: req.user.last_name,
         email: req.user.email,
@@ -25,7 +26,7 @@ exports.login = (req, res) => {
     // only a cookie is sent containing the session_id
     // just by adding a property to req.session express will create or update a session
     // cookie and session created automatically
-    req.session.email = user.email;
+    req.session.email = user.user_id;
     req.session.user_type = user.user_type;
     console.log('USER LOGGED IN SUCCESSFULLY');
     res.json({

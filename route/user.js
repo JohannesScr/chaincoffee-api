@@ -9,6 +9,7 @@
 
 let User = require('../model/user');
 let q = require('q');
+let query_service = require('../extend/extend_query_params');
 
 /* =============== PRIMARY FUNCTIONS =============== */
 // route to register a user on the system
@@ -81,6 +82,32 @@ exports.register_user = (req, res, next) => {
     }
 };
 
+exports.list_user = (req, res, next) => {
+    /** @param {object} req
+     * @param {object} res
+     * @param next
+     *
+     * @description
+     * Call get_user_query function passing the {object} req to return the {array} user
+     * Then callback function passing the {array} user
+     * Then add {array} user to {object} res.user
+     * @return {object} res */
+
+    // check want the user wants to get
+    query_service.add_user_query_params()
+            .then((user) => {
+                // send response
+                res.json({
+                    response: 'You sent a /GET to /user',
+                    message: 'Get data successfully',
+                    data: user
+                });
+            })
+            .catch((err) => {
+                next(err);
+            });
+};
+
 // route to return all the users
 exports.get_user = (req, res, next) => {
     /** @param {object} req
@@ -94,18 +121,17 @@ exports.get_user = (req, res, next) => {
      * @return {object} res */
 
     // check want the user wants to get
-    get_user_query(req.query)
-            .then((user) => {
-                // send response
-                res.json({
-                    response: 'You sent a /GET to /user',
-                    message: 'Get data successfully',
-                    data: user
-                });
-            })
-            .catch((err) => {
-                next(err);
-            });
+    let user_id = req.params.id;
+
+    User.findById(user_id, (err, user) => {   // then execute the callback function
+        if (err) next(err);
+
+        res.json({
+            response: 'You sent a /GET to /user',
+            message: 'Get data successfully',
+            data: user
+        });
+    });
 };
 
 // route to create a new user
@@ -219,13 +245,13 @@ exports.put_user = (req, res, next) => {
                 // email
                 // todo ^^
 
-                user.save((err, user) => {
+                user.save((err, updated_user) => {
                     if (err) next(err);
 
                     res.json({
                         response: 'You sent a /PUT to /user' + req.params.id + ' to update that user in the system',
                         message: 'User successfully updated',
-                        data: user,
+                        data: updated_user,
                     });
                 });
             })
@@ -267,46 +293,46 @@ exports.delete_user = (req, res, next) => {
      * Add {object} deleted_user first and last name to {object} res
      * @return res */
 
-    // if (req.params.id && req.body.delete_text) {
-    //     // fetch user
-    //     let user_to_be_deleted;
-    //     User.findById(req.params.id, (error, user) => {
-    //         if (error) next(error);
-    //         user_to_be_deleted = user;
-    //
-    //         // if user name and surname match
-    //         if (req.body.delete_text.toLowerCase() === `delete ${user_to_be_deleted.first_name} ${user_to_be_deleted.last_name}`.toLowerCase()) {
-    //             // if super admin or session.user_id equals the deleted user's id
-    //             // only super admin or the user themselves can remove the user from the system
-    //             if (req.session.user_type || req.session.user_id === user_to_be_deleted._id) {
-    //                 User.findByIdAndRemove(user_to_be_deleted._id, (err, deleted_user) => {
-    //                     if (err) next(err);
-    //                     console.log('USER DELETED SUCCESSFULLY');
-    //                     res.json({
-    //                         response: 'You sent a /DELETE to /user to delete a user from the system',
-    //                         message: 'User successfully deleted from the database',
-    //                         first_name: deleted_user.first_name,
-    //                         last_name: deleted_user.last_name
-    //                     });
-    //                 });
-    //             } else {
-    //                 let err = new Error('Unauthorized session tokens');
-    //                 err.status = 400;
-    //                 next(err);
-    //             }
-    //             // else err
-    //         } else {
-    //             let err = new Error('Delete text not matching');
-    //             err.status = 400;
-    //             next(err);
-    //         }
-    //
-    //     });
-    // } else {
-    //     let err = new Error('Please enter a user_id to be removed');
-    //     err.status = 400;
-    //     next(err);
-    // }
+    if (req.params.id && req.body.delete_text) {
+        // fetch user
+        let user_to_be_deleted;
+        User.findById(req.params.id, (error, user) => {
+            if (error) next(error);
+            user_to_be_deleted = user;
+
+            // if user name and surname match
+            if (req.body.delete_text.toLowerCase() === `delete ${user_to_be_deleted.first_name} ${user_to_be_deleted.last_name}`.toLowerCase()) {
+                // if super admin or session.user_id equals the deleted user's id
+                // only super admin or the user themselves can remove the user from the system
+                if (req.session.user_type || req.session.user_id === user_to_be_deleted._id) {
+                    User.findByIdAndRemove(user_to_be_deleted._id, (err, deleted_user) => {
+                        if (err) next(err);
+                        console.log('USER DELETED SUCCESSFULLY');
+                        res.json({
+                            response: 'You sent a /DELETE to /user to delete a user from the system',
+                            message: 'User successfully deleted from the database',
+                            first_name: deleted_user.first_name,
+                            last_name: deleted_user.last_name
+                        });
+                    });
+                } else {
+                    let err = new Error('Unauthorized session tokens');
+                    err.status = 400;
+                    next(err);
+                }
+                // else err
+            } else {
+                let err = new Error('Delete text not matching');
+                err.status = 400;
+                next(err);
+            }
+
+        });
+    } else {
+        let err = new Error('Please enter a user_id to be removed');
+        err.status = 400;
+        next(err);
+    }
 
     // todo get sessions sorted to implement ^^
     delete_user(req, next, (deleted_user) => {
@@ -321,40 +347,6 @@ exports.delete_user = (req, res, next) => {
 };
 
 /* =============== SECONDARY FUNCTIONS =============== */
-
-get_user_query = (query) => {
-    /** @param {object} query
-     *
-     * @description
-     * Create deferred promise {object} d by calling {object} q.defer method, because the request to the database is asynchronous
-     * Set {number} user_id to {number} req.body.user_id
-     * Call {model} User.findById method passing {number} user_id to return {object} user
-     * Call {object} d.resolve method passing the {object} user
-     * @return d.promise */
-
-    let d = q.defer();
-
-    if (query.user_id) {
-        // get a specific user
-        console.log('GET USER: ', query.user_id);
-        let user_id = query.user_id;
-
-        User.findById(user_id, (err, user) => {   // then execute the callback function
-            if (err) d.reject(err);
-            d.resolve(user);
-        });
-    } else {
-        // get all users
-        console.log('GET ALL USERS: ');
-        User.find({})                      // find({}) to get all the results
-                .exec((err, user) => {   // then execute the callback function
-                    if (err) d.reject(err);
-                    d.resolve(user);
-                });
-    }
-
-    return d.promise;
-};
 
 update_event = (event, user, next) => {
     /** @param {object} event
@@ -371,15 +363,15 @@ update_event = (event, user, next) => {
 
     // APPEND
     if (event.status === 'append') {
-        user.event.push(event._id);
+        user.event.push(event.event_id);
     }
 
     // REMOVE
     if (event.status === 'remove') {
-        if (user.event.indexOf(event._id) !== -1) {
+        if (user.event.indexOf(event.event_id) !== -1) {
             // check that the event id is present in the user's event array
             // remove that event id
-            user.event.splice(user.event.indexOf(event._id), 1);
+            user.event.splice(user.event.indexOf(event.event_id), 1);
 
         } else {
             let err = new Error('Event id not found on user');

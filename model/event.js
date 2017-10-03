@@ -24,7 +24,7 @@ let EventSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    distance_from_stellenbosch: {
+    distance_from_head_office: {
         type: Number,
         trim: true
     },

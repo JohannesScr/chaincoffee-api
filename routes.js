@@ -29,14 +29,16 @@ router.post('/login', authentication_middleware.user_credentials, authentication
 router.post('/logout', authentication_service.logout);
 
 // USER
-router.get('/user', user_service.get_user);
 router.post('/user', user_service.post_user);
+router.get('/user', user_service.list_user);
+router.get('/user/:id', user_service.get_user);
 router.put('/user/:id', user_service.put_user);
 router.delete('/user/:id', user_service.delete_user);
 
 // EVENT
-router.get('/event', event_service.get_event);
 router.post('/event', event_service.post_event, user_service.put_user);
+router.get('/event', event_service.list_event);
+router.get('/event/:id', event_service.get_event);
 router.put('/event/:id', event_service.put_event);
 router.delete('/event/:id', event_service.delete_event, user_service.put_user);
 

@@ -5,12 +5,11 @@ let jsonParser = require('body-parser').json;   // import body-parser's json par
 let mongoose = require('mongoose');
 let session = require('express-session');
 let MongoStore = require('connect-mongo')(session); // connect to mongo to store sessions
+let logger = require('morgan');
 
 /* =============== EXPRESS =============== */
 let app = express();    // define the express instance
 
-/* =============== DEV =============== */
-let logger = require('morgan');
 
 /* =============== LOCAL =============== */
 let routes = require('./routes');
@@ -47,11 +46,12 @@ app.use(function(req, res, next) {
 
 /* =============== MIDDLEWARE =============== */
 
-// white listed routes
+
 let white_listed_routes = [
         '/login'
 ];
 
+// white listed routes
 app.use((req, res, next) => {
    req.white_listed = white_listed_routes;
    next();
@@ -74,10 +74,10 @@ app.use(session({
 }));
 
 // make session id available
-app.use((req, res, next) => {
-    res.locals.current_user = req.session.email;
-    next();
-});
+// app.use((req, res, next) => {
+//     res.locals.current_user = req.session.email;
+//     next();
+// });
 
 // session authentication
 app.use(authentication_middleware.route_authorization);
@@ -90,25 +90,33 @@ app.use(routes);
 
 /* =============== ERROR HANDLER =============== */
 
-// error handler for routes
 // catch 404 and pass to error handler
 app.use((req, res, next) => {
-  let err = new Error('Not Found'); // use javascript's native error constructor to create an error
-  err.status = 404;                 // part of the error constructor and will get passed to the error handler
-  next(err);                        // calling next with a parameter signals that there was an error
-  // then it will call the error handler and pass the err parameter onto the handler
+    /**
+     *
+     * @explanation
+     * use javascript's native error constructor to create an error
+     * part of the error constructor and will get passed to the error handler
+     * calling next with a parameter signals that there was an error
+     * then it will call the error handler and pass the err parameter onto the handler */
+
+    let err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
 
-// if express encouters an error, it stops everything it is doing and passes the error to the first error handler it finds
-// an error handler has 4 arguments in its call-back function
 // Error Handler
 app.use((err, req, res, next) => {
-  res.status(err.status || 500);    // if there is an err status else use 500 (Internal Server Error)
-  res.json({
-    error: {
-      message: err.message          // err.message = new Error('text in here')
-    }
-  });
+    /**
+     * @explanation
+     * if express encouters an error, it stops everything it is doing and passes the error to the first error handler it finds
+     * an error handler has 4 arguments in its call-back function */
+    res.status(err.status || 500);    // if there is an err status else use 500 (Internal Server Error)
+    res.json({
+        error: {
+         message: err.message
+        }
+    });
 });
 
 
@@ -119,5 +127,5 @@ let port = process.env.PORT || 3089;
 
 // set the port for the app to listen on
 app.listen(port, () => {
-  console.log('Express server is listening on port', port);
+    console.log('Express server is listening on port', port);
 });
