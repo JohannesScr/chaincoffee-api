@@ -3,7 +3,7 @@
 let user_service = require('./route/user');
 let event_service = require('./route/event');
 let authentication_service = require('./route/auth');
-let validation_service = require('./extend/user_credentials');
+let authentication_middleware = require('./extend/auth');
 
 let express = require('express');
 let router = express.Router();
@@ -23,10 +23,10 @@ router.get('/', (req, res) => {
 router.post('/register', user_service.register_user, authentication_service.login);
 
 // LOGIN
-router.post('/login', validation_service.user_credentials, authentication_service.login);
+router.post('/login', authentication_middleware.user_credentials, authentication_service.login);
 
 // LOGOUT
-router.post('/logout', (req, res) => {});
+router.post('/logout', authentication_service.logout);
 
 // USER
 router.get('/user', user_service.get_user);

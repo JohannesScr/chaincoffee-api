@@ -4,6 +4,7 @@ let express = require('express');   // import express
 let jsonParser = require('body-parser').json;   // import body-parser's json parser
 let mongoose = require('mongoose');
 let session = require('express-session');
+let MongoStore = require('connect-mongo')(session); // connect to mongo to store sessions
 
 /* =============== EXPRESS =============== */
 let app = express();    // define the express instance
@@ -13,7 +14,7 @@ let logger = require('morgan');
 
 /* =============== LOCAL =============== */
 let routes = require('./routes');
-let authentication_service = require('./route/auth');
+// let authentication_middleware = require('./extend/auth');
 
 
 /* =============== MONGODB =============== */
@@ -66,11 +67,20 @@ app.use(jsonParser());
 app.use(session({
     secret: 'chain coffee loves good coffee',
     resave: true,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: new MongoStore({
+        mongooseConnection: db
+    })
 }));
 
+// make session id available
+app.use((req, res, next) => {
+    res.locals.current_user = req.session.user_id;
+    next();
+});
+
 // todo route user authorization with sessions
-// app.use(authentication_service.route_authorization);
+// app.use(authentication_middleware.route_authorization);
 
 
 /* =============== ROUTES =============== */

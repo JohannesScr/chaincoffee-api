@@ -1,41 +1,6 @@
 
 /* =============== PRIMARY FUNCTIONS =============== */
 
-exports.route_authorization = (req, res, next) => {
-    /** @param {object} req
-     * @param {object} res
-     * @param next
-     *
-     * @description
-     * Set {boolean} current_session by calling check_session and passing the {object} req to return true if there is a session
-     * Set {boolean} white_list_route_check to false
-     * Set white_list_route_check to true if the {string} req.url is in the {array} white_listed array
-     *
-     * **** Carry on with authorization ****
-     *
-     * Call the next function to proceed to any route */
-
-    let current_session = check_session(req);
-    let white_list_route_check = false;
-
-    for (let i = 0; i < req.white_listed.length; i++) {
-        if (req.url === req.white_listed[i]) {
-            white_list_route_check = true;
-        }
-    }
-
-    // check for white_listed route or active session
-    if (white_list_route_check === false && current_session === false) {
-        let err = new Error('Unauthorised, please log in.');
-        err.status = 403;   // forbidden
-        next(err);
-    }
-
-    // todo retrieve the user information from the db if necessary
-
-    next();
-};
-
 exports.login = (req, res) => {
     /** @param {object} req
      * @param {object} res
@@ -61,7 +26,8 @@ exports.login = (req, res) => {
     // only a cookie is sent containing the session_id
     // just by adding a property to req.session express will create or update a session
     // cookie and session created automatically
-    req.session.user_id = req.user.id;
+    req.session.user_id = user.id;
+    req.session.user_type = user.user_type;
     console.log('USER LOGGED IN SUCCESSFULLY');
     res.json({
         message: 'User logged in successfully',
@@ -70,14 +36,18 @@ exports.login = (req, res) => {
     });
 };
 
-/* =============== SECONDARY FUNCTIONS =============== */
+exports.logout = (req, res, next) => {
+    if (req.session) {
+        // delete session object
+        req.session.destroy((err) => {
+            if (err) next(err);
 
-check_session = (req) => {
-    /** @param {object} req
-     * Checks if the {object} req.session.user_id is present
-     * @return true|false */
-
-    if(!req.session.user_id) {
-        return false;
+            res.json({
+                message: 'User logged out successfully'
+            })
+        });
     }
 };
+
+/* =============== SECONDARY FUNCTIONS =============== */
+
