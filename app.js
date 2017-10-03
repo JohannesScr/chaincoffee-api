@@ -14,7 +14,7 @@ let logger = require('morgan');
 
 /* =============== LOCAL =============== */
 let routes = require('./routes');
-// let authentication_middleware = require('./extend/auth');
+let authentication_middleware = require('./extend/auth');
 
 
 /* =============== MONGODB =============== */
@@ -75,12 +75,12 @@ app.use(session({
 
 // make session id available
 app.use((req, res, next) => {
-    res.locals.current_user = req.session.user_id;
+    res.locals.current_user = req.session.email;
     next();
 });
 
-// todo route user authorization with sessions
-// app.use(authentication_middleware.route_authorization);
+// session authentication
+app.use(authentication_middleware.route_authorization);
 
 
 /* =============== ROUTES =============== */

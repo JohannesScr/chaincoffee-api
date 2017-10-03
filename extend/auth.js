@@ -65,9 +65,18 @@ exports.route_authorization = (req, res, next) => {
         next(err);
     }
 
-    // todo retrieve the user information from the db if necessary
-
     next();
+};
+
+exports.route_request_authentication = (req, res, next) => {
+    /** route_request_authentication - check that the request contains the correct parameters and nothing else
+     * @param {object} req
+     * @param {object} res
+     * @param next
+     *
+     * @description
+     * 
+     *      Calls next to proceed to the route */
 };
 
 /* =============== SECONDARY FUNCTIONS =============== */
@@ -77,7 +86,7 @@ check_session = (req) => {
      * Checks if the {object} req.session.user_id is present
      * @return true|false */
 
-    if (req.session && req.session.user_id) {
+    if (req.session && req.session.email) {
         return true;
     } else {
         return false;
